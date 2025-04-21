@@ -1,5 +1,5 @@
 @extends('main')
-@section('title', '| Pembelian')
+@section('title', '| Penjualan')
 
 @section('content')
 <div class="container-fluid">
@@ -12,16 +12,16 @@
                             <div class="row">
                                 @if (Auth::user()->role == 'employee')
                                 <div class="col-6">
-                                    <a href="{{ route('sales.exportexcel') }}" class="btn btn-info">
+                                    <a href="{{ route('sales.exportexcel') }}" class="btn btn-info text-white">
                                         Export Penjualan (.xlsx)
                                     </a>
                                 </div>
                                 @endif
                             </div>
                         </div>
-                        @if (Auth::user()->role == 'employee')
+                        @if (Auth::user()->role == 'employee')  
                         <div class="col text-end">
-                            <a href="{{ route('sales.create') }}" class="btn btn-primary">
+                            <a href="{{ route('sales.create') }}" class="btn btn-info text-white">
                                 <i class="mdi mdi-plus"></i>
                                 Tambah Penjualan
                             </a>

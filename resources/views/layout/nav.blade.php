@@ -12,10 +12,10 @@
                                     class="hide-menu">Dashboard</span></a></li>
                         <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
                                 href="{{    route('product')   }}" aria-expanded="false"><i class="mdi mdi-package-variant-closed"></i><span
-                                    class="hide-menu">Product</span></a></li>
+                                    class="hide-menu">Product   </span></a></li>
                         <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
                                 href="{{ route('sales') }}" aria-expanded="false"><i class="mdi mdi-cart"></i><span
-                                    class="hide-menu">Pembelian</span></a></li>
+                                    class="hide-menu">Penjualan</span></a></li>
                                     @if(Auth::user()->role === 'admin')  
                                     <li class="sidebar-item"> <a class="sidebar-link waves-effect waves-dark sidebar-link"
                                         href="{{    route('user.list')   }}" aria-expanded="false"><i

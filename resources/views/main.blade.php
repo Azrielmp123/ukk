@@ -41,8 +41,8 @@
                                      User Create
                                 @elseif(Route::currentRouteName() == 'user.edit')
                                      User Edit 
-                                @elseif(Route::currentRouteName() == 'sales')
-                                     sales
+                                @elseif(Route::currentRouteName() == 'Penjualan')
+                                     Penjualan
                                 @elseif(Route::currentRouteName() == 'sales.create')
                                      Buat Penjualan
                                 @elseif(Route::currentRouteName() == 'sales.post')
@@ -52,7 +52,7 @@
                                 @elseif(Route::currentRouteName() == 'sales.create.member')
                                      View Member
                                 @else
-                                    Halaman Tidak Diketahui
+                                    Penjualan
                                 @endif
                               </li>
                             </ol>

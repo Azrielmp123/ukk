@@ -23,3 +23,14 @@ class IsEmployee
         }
     }
 }
+
+
+
+//public function handle(Request $request, Closure $next): Response
+    // {
+    //     if (Auth::user()->role == 'admin') {
+    //         return $next($request);
+    //     } else {
+    //         return redirect()->back();
+    //     }
+    // }

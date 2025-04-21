@@ -88,7 +88,7 @@
 <body>
     <div id="receipt">
         <b id="top">
-            <h2>Indo April</h2>
+            <h2>FlexyLite</h2>
         </b>
         <div id="mid">
             <div class="info" style="display: flex; justify-content: space-between;">
@@ -115,7 +115,7 @@
                                 <h2>Nama Produk</h2>
                             </td>
                             <td class="item">
-                                <h2>QTy</h2>
+                                <h2>Qty</h2>
                             </td>
                             <td class="item">
                                 <h2>Harga</h2>

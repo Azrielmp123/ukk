@@ -1,5 +1,5 @@
 @extends('main')
-@section('title', '| Product')
+@section('title', '| Produk')
 
 @section('content')
 
