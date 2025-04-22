@@ -96,10 +96,10 @@ class DetailSalesController extends Controller
         }
     }
 
-    public function exportexcel()
+    public function exportexcel(Request $request)
     {
-        if (Auth::user()->role == 'employee') {
-            return FacadesExcel::download(new salesimport, 'Penjualan.xlsx');
+        if (Auth::user()->role == 'employee'|| Auth::user()->role == 'admin') {
+            return FacadesExcel::download(new salesimport($request), 'Penjualan.xlsx');
         }
     }
     /**

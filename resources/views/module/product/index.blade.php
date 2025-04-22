@@ -93,9 +93,29 @@
 
                                                 <!-- Stok -->
                                                 <div class="mb-3">
-                                                    <label for="stock" class="form-label">Stock</label>
-                                                    <input type="number" class="form-control border-secondary" id="stock" name="stock" value="{{ $product->stock }}"  max="9999999999" oninput="this.value = this.value.slice(0, 10)">
-                                                </div>
+    <label for="stock" class="form-label">Stock</label>
+    <input type="number" class="form-control border-secondary" id="stock" name="stock" required
+         value="{{ old('stock') }}">
+    <small id="stockError" class="text-danger d-none"></small>
+</div>
+
+<script>
+    const stockInput = document.getElementById('stock');
+    const stockError = document.getElementById('stockError');
+
+    stockInput.addEventListener('input', function () {
+        const value = parseInt(this.value);
+
+        if (isNaN(value) || value < 0) {
+            stockError.classList.remove('d-none');
+            this.setCustomValidity("uhuy");
+        } else {
+            stockError.classList.add('d-none');
+            this.setCustomValidity("");
+        }
+    });
+</script>
+
 
                                                 <!-- Tombol Submit -->
                                                 <button type="submit" class="btn btn-primary">Simpan</button>

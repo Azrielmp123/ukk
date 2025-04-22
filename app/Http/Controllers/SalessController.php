@@ -13,26 +13,59 @@ use Illuminate\Support\Facades\Auth;
 class SalessController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Menampilkan semua data penjualan.
      */
-    public function index()
-    {
-        $saless = saless::with('customer', 'user', 'detail_sales')->orderBy('id','desc')->get();
-        return view('module.pembelian.index', compact('saless'));
+    public function index(Request $request)
+{
+    $query = saless::with('customer', 'user', 'detail_sales')->orderBy('id', 'desc');
+
+    // Filter per hari
+    if ($request->filled('date')) {
+        $query->whereDate('sale_date', $request->date);
     }
+
+    // Filter per minggu (dari tanggal tertentu ke awal & akhir minggu itu)
+    if ($request->filled('week')) {
+        $weekParts = explode('-W', $request->week);
+        $year = $weekParts[0];
+        $week = $weekParts[1];
+
+        $startOfWeek = Carbon::now()->setISODate($year, $week)->startOfWeek(Carbon::MONDAY);
+        $endOfWeek = Carbon::now()->setISODate($year, $week)->endOfWeek(Carbon::SUNDAY);
+
+        $query->whereBetween('sale_date', [$startOfWeek->toDateString(), $endOfWeek->toDateString()]);
+    }
+
+    // Filter per bulan
+    if ($request->filled('month')) {
+        $month = Carbon::parse($request->month);
+        $query->whereMonth('sale_date', $month->month)
+              ->whereYear('sale_date', $month->year);
+    }
+
+    // Filter per tahun
+if ($request->filled('year')) {
+    $query->whereYear('sale_date', $request->year);
+}
+
+    $saless = $query->get();
+
+    return view('module.pembelian.index', compact('saless'));
+}
 
 
     /**
-     * Show the form for creating a new resource.
+     * Tampilkan form untuk membuat transaksi baru.
      */
     public function create()
     {
+        // Ambil semua produk untuk ditampilkan dalam form
         $products = products::all();
         return view('module.pembelian.create', compact('products'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Simpan produk yang dipilih ke session, lalu arahkan ke halaman detail transaksi.
      */
     public function store(Request $request)
     {
@@ -40,23 +73,22 @@ class SalessController extends Controller
             return back()->with('error', 'Pilih produk terlebih dahulu!');
         }
 
-        // Hapus data sebelumnya agar tidak terjadi duplikasi
+        // Hapus data sebelumnya agar tidak duplikat
         session()->forget('shop');
 
         $selectedProducts = $request->shop;
 
-        // Pastikan data dikirim dalam bentuk array
         if (!is_array($selectedProducts)) {
             return back()->with('error', 'Format data tidak valid!');
         }
 
-        // Simpan hanya produk yang memiliki jumlah lebih dari 0, hapus duplikasi
+        // Filter produk: hanya yang memiliki jumlah lebih dari 0, dan hapus duplikat berdasarkan ID
         $filteredProducts = collect($selectedProducts)
             ->mapWithKeys(function ($item) {
                 $parts = explode(';', $item);
                 if (count($parts) > 3) {
                     $id = $parts[0];
-                    return [$id => $item]; // Pastikan hanya 1 produk per ID
+                    return [$id => $item];
                 }
                 return [];
             })
@@ -66,16 +98,22 @@ class SalessController extends Controller
         // Simpan ke sesi
         session(['shop' => $filteredProducts]);
 
+        // Arahkan ke halaman detail pembelian
         return redirect()->route('sales.post');
     }
 
-
+    /**
+     * Menampilkan halaman detail pembelian berdasarkan data di session.
+     */
     public function post()
     {
         $shop = session('shop', []);
         return view('module.pembelian.detail', compact('shop'));
     }
 
+    /**
+     * Menyimpan transaksi penjualan baru, baik untuk member maupun non-member.
+     */
     public function createsales(Request $request)
     {
         $request->validate([
@@ -84,33 +122,33 @@ class SalessController extends Controller
             'total_pay.required' => 'Berapa jumlah uang yang dibayarkan?',
         ]);
 
+        // Menghapus karakter selain angka (format Rupiah)
         $newPrice = (int) preg_replace('/\D/', '', $request->total_price);
         $newPay = (int) preg_replace('/\D/', '', $request->total_pay);
         $newreturn = $newPay - $newPrice;
 
         if ($request->member === 'Member') {
-            // Mengecek apakah customer sudah pernah melakukan pembelian sebelumnya
+            // Cek apakah customer sudah pernah beli
             $existCustomer = customers::where('no_hp', $request->no_hp)->first();
-            // Akumulasi Point
-            $point = floor($newPrice / 100);
+            $point = floor($newPrice / 100); // 1 point per 100 rupiah
+
             if ($existCustomer) {
-                // Jika customer sebelumnya sudah ada, maka update point
+                // Tambah point jika sudah pernah
                 $existCustomer->update([
                     'point' => $existCustomer->point + $point,
                 ]);
-                // Ambil ID customer
                 $customer_id = $existCustomer->id;
             } else {
-                // Jika customer baru, maka create customer baru
+                // Buat customer baru
                 $existCustomer = customers::create([
                     'name' => "",
                     'no_hp' => $request->no_hp,
                     'point' => $point,
                 ]);
-                // Ambil ID customer baru
                 $customer_id = $existCustomer->id;
             }
-            // Membuat data penjualan
+
+            // Simpan data penjualan
             $sales = saless::create([
                 'sale_date' => Carbon::now()->format('Y-m-d'),
                 'total_price' => $newPrice,
@@ -118,9 +156,10 @@ class SalessController extends Controller
                 'total_return' => $newreturn,
                 'customer_id' => $customer_id,
                 'user_id' => Auth::id(),
-                'point' => floor($newPrice / 100),
+                'point' => $point,
                 'total_point' => 0,
             ]);
+
             $detailSalesData = [];
 
             foreach ($request->shop as $shopItem) {
@@ -137,10 +176,8 @@ class SalessController extends Controller
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
-                // //menyebabkan duplikasi data
-                // detail_sales::insert($detailSalesData);
 
-                // Update stok produk di database
+                // Kurangi stok produk
                 $product = products::find($productId);
                 if ($product) {
                     $newStock = $product->stock - $amount;
@@ -150,10 +187,15 @@ class SalessController extends Controller
                     $product->update(['stock' => $newStock]);
                 }
             }
+
+            // Simpan semua detail penjualan sekaligus
             detail_sales::insert($detailSalesData);
+
+            // Arahkan ke halaman registrasi member (untuk lengkapi data)
             return redirect()->route('sales.create.member', ['id' => saless::latest()->first()->id])
                 ->with('message', 'Silahkan daftar sebagai member');
         } else {
+            // Jika bukan member (customer dipilih dari dropdown)
             $sales = saless::create([
                 'sale_date' => Carbon::now()->format('Y-m-d'),
                 'total_price' => $newPrice,
@@ -182,9 +224,7 @@ class SalessController extends Controller
                     'updated_at' => now(),
                 ];
 
-             
-
-                // Update stok produk di database
+                // Kurangi stok produk
                 $product = products::find($productId);
                 if ($product) {
                     $newStock = $product->stock - $amount;
@@ -194,47 +234,25 @@ class SalessController extends Controller
                     $product->update(['stock' => $newStock]);
                 }
             }
+
             detail_sales::insert($detailSalesData);
+
+            // Arahkan ke halaman print
             return redirect()->route('sales.print.show', ['id' => $sales->id])->with('Silahkan Print');
         }
-
     }
 
-
     /**
-     * Display the specified resource.
+     * Menampilkan detail penjualan untuk proses pendaftaran member.
      */
     public function createmember($id)
     {
         $sale = saless::with('detail_sales.product')->findOrFail($id);
-        // Menentukan apakah customer sudah pernah melakukan pembelian sebelumnya
+
+        // Cek apakah ini pembelian pertama atau bukan
         $notFirst = saless::where('customer_id', $sale->customer->id)->count() != 1 ? true : false;
+
         return view('module.pembelian.view-member', compact('sale','notFirst'));
     }
 
-
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(saless $saless)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, saless $saless)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(saless $saless)
-    {
-        //
-    }
 }

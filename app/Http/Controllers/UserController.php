@@ -116,16 +116,28 @@ class UserController extends Controller
     }
 
 
-    public function destroy(User $User, $id)
-    {
-        User::where('id', $id)->delete();
-        return redirect()->route('user.list')->with('success', 'Berhasil Hapus User');
+    public function destroy(User $user, $id)
+{
+    $user = User::findOrFail($id);
+
+    // Cek apakah user yang akan dihapus adalah admin
+    if ($user->role === 'admin') {
+        return redirect()->route('user.list')->with('error', 'User admin tidak boleh dihapus.');
     }
-    
-    public function logout()
-    {
-        Auth::logout();
-        return redirect()->route('login')->with('logout', 'Anda telah berhasil logout!');
-    }
+
+    $user->delete();
+
+    return redirect()->route('user.list')->with('success', 'Berhasil hapus user.');
 }
+
+ 
+public function logout()
+{
+    Auth::logout();
+    return redirect()->route('login')->with('logout', 'Anda telah berhasil logout!');
+}
+}
+
+
+
 

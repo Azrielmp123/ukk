@@ -16,3 +16,4 @@
     <script src="{{ asset('assets/libs/chartist/dist/chartist.min.js') }}"></script>
     <script src="{{ asset('assets/libs/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js') }}"></script>
     <script src="{{ asset('dist/js/pages/dashboards/dashboard1.js') }}"></script>
+    

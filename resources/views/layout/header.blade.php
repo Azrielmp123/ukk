@@ -42,13 +42,13 @@
                         <!-- ============================================================== -->
                         <!-- Search -->
                         <!-- ============================================================== -->
-                        <li class="nav-item search-box"> <a class="nav-link waves-effect waves-dark"
+                        <!-- <li class="nav-item search-box"> <a class="nav-link waves-effect waves-dark"
                                 href="javascript:void(0)"><i class="mdi mdi-magnify me-1"></i> <span class="font-16">Search</span></a>
                             <form class="app-search position-absolute">
                                 <input type="text" class="form-control" placeholder="Search &amp; enter"> <a
                                     class="srh-btn"><i class="mdi mdi-window-close"></i></a>
                             </form>
-                        </li>
+                        </li> -->
                     </ul>
                     <!-- ============================================================== -->
                     <!-- Right side toggle and nav items -->

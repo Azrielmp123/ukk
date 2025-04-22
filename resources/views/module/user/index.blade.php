@@ -56,14 +56,21 @@
                                 <td>{{ $user->name }}</td>
                                 <td>{{ $user->role }}</td>
                                 <td>
+                                    
                                         <a href="{{ route('user.edit', $user->id) }}" class="btn btn-warning">Edit</a>
-                                         
+                                        
                                         <form action="{{ route('user.delete', $user->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger" onclick="return confirm('Yakin ingin menghapus User ini?')">Hapus</button>
                                         </form>
+
                                 </td>
+                                <!-- @if (session('error'))
+                                <div class="alert alert-danger">
+                                 {{session('error')}}
+                               </div>
+                               @endif -->
                             </tr>
                             @empty
                             <tr>
